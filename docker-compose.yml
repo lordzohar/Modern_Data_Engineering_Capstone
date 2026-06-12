@@ -1,0 +1,410 @@
+# =============================================================================
+# Day 9 Monitoring Labs - Modern KRaft Kafka + Full Observability Stack
+# NO Zookeeper. 3-broker KRaft cluster. Production-grade tooling.
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # KAFKA KRAFT CLUSTER (3 brokers, no Zookeeper, combined controller+broker)
+  # ---------------------------------------------------------------------------
+  kafka1:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka1
+    hostname: kafka1
+    ports:
+      - "9092:9092"
+      - "9991:9991"   # JMX
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:29092,CONTROLLER://kafka1:9093,EXTERNAL://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:29092,EXTERNAL://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      CLUSTER_ID: 'kraft-taxi-cluster-001'
+      KAFKA_JMX_PORT: 9991
+      KAFKA_JMX_HOSTNAME: kafka1
+    volumes:
+      - ./jmx_exporter:/opt/jmx-exporter
+    # KAFKA_OPTS is exported only inside this shell so the broker JVM gets the
+    # JMX Prometheus javaagent, but `docker exec ... kafka-topics ...` sessions
+    # do NOT inherit it (otherwise the second JVM tries to re-bind port 7071
+    # with `Address already in use`).
+    entrypoint:
+      - bash
+      - -c
+      - |
+        export KAFKA_OPTS='-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=7071:/opt/jmx-exporter/kafka.yml'
+        exec /etc/confluent/docker/run
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka1:29092"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka2
+    hostname: kafka2
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:29092,CONTROLLER://kafka2:9093,EXTERNAL://0.0.0.0:9094'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:29092,EXTERNAL://localhost:9094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      CLUSTER_ID: 'kraft-taxi-cluster-001'
+    volumes:
+      - ./jmx_exporter:/opt/jmx-exporter
+    # See kafka1 above for why KAFKA_OPTS lives in entrypoint, not environment.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        export KAFKA_OPTS='-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=7071:/opt/jmx-exporter/kafka.yml'
+        exec /etc/confluent/docker/run
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka2:29092"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka3
+    hostname: kafka3
+    ports:
+      - "9095:9095"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:29092,CONTROLLER://kafka3:9093,EXTERNAL://0.0.0.0:9095'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:29092,EXTERNAL://localhost:9095'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      CLUSTER_ID: 'kraft-taxi-cluster-001'
+    volumes:
+      - ./jmx_exporter:/opt/jmx-exporter
+    # See kafka1 above for why KAFKA_OPTS lives in entrypoint, not environment.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        export KAFKA_OPTS='-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent.jar=7071:/opt/jmx-exporter/kafka.yml'
+        exec /etc/confluent/docker/run
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka3:29092"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # POSTGRES - reference database (drivers table, also used by ksqlDB joins)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: taxi
+      POSTGRES_PASSWORD: taxi
+      POSTGRES_DB: taxi
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "taxi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # KAFKA CONNECT + DEBEZIUM - CDC from Postgres into Kafka
+  #   * Debezium image uses UNPREFIXED env vars (BOOTSTRAP_SERVERS, GROUP_ID,
+  #     REST_ADVERTISED_HOST_NAME, ...) - NOT the Confluent CONNECT_* prefix.
+  #   * Internal storage topics use RF=3 so they survive a single broker loss.
+  #   * KEY/VALUE_CONVERTER_SCHEMAS_ENABLE=false keeps JSON payloads clean
+  #     (matches the per-connector setting in debezium-postgres.json).
+  # ---------------------------------------------------------------------------
+  kafka-connect:
+    image: debezium/connect:2.6
+    container_name: kafka-connect
+    hostname: kafka-connect
+    ports:
+      - "8083:8083"
+    environment:
+      # Debezium entrypoint maps these "known" unprefixed vars directly:
+      BOOTSTRAP_SERVERS: "kafka1:29092,kafka2:29092,kafka3:29092"
+      GROUP_ID: "taxi-connect-group"
+      CONFIG_STORAGE_TOPIC: "_connect_configs"
+      OFFSET_STORAGE_TOPIC: "_connect_offsets"
+      STATUS_STORAGE_TOPIC: "_connect_statuses"
+      KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      OFFSET_FLUSH_INTERVAL_MS: 10000
+      ADVERTISED_HOST_NAME: "kafka-connect"
+      REST_PORT: 8083
+      # Anything else MUST use the CONNECT_ prefix to be written into
+      # connect-distributed.properties by the entrypoint:
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_started
+      kafka3:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8083/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # SCHEMA REGISTRY - schema management for ksqlDB / Avro / JSON Schema
+  #   * Kafkastore topic created with RF=3 so it survives broker loss.
+  #   * Listeners pinned explicitly for predictability.
+  # ---------------------------------------------------------------------------
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+    container_name: schema-registry
+    hostname: schema-registry
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'PLAINTEXT://kafka1:29092,PLAINTEXT://kafka2:29092,PLAINTEXT://kafka3:29092'
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 3
+      SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL: 'backward'
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_started
+      kafka3:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/subjects || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # KSQLDB SERVER - SQL-based stream processing (used in Lab 11)
+  #   * Internal command topic + stream-processor topics need RF=3 because
+  #     brokers enforce min.insync.replicas=2 (RF=1 topics would fail to write).
+  # ---------------------------------------------------------------------------
+  ksqldb-server:
+    image: confluentinc/cp-ksqldb-server:7.6.1
+    container_name: ksqldb-server
+    hostname: ksqldb-server
+    ports:
+      - "8088:8088"
+    environment:
+      KSQL_BOOTSTRAP_SERVERS: 'PLAINTEXT://kafka1:29092,PLAINTEXT://kafka2:29092,PLAINTEXT://kafka3:29092'
+      KSQL_HOST_NAME: ksqldb-server
+      KSQL_LISTENERS: 'http://0.0.0.0:8088'
+      KSQL_KSQL_SERVICE_ID: 'taxi_'
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 3
+      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 3
+      KSQL_KSQL_STREAMS_PRODUCER_ACKS: 'all'
+      KSQL_KSQL_STREAMS_TOPIC_MIN_INSYNC_REPLICAS: 2
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_started
+      kafka3:
+        condition: service_started
+      schema-registry:
+        condition: service_started
+
+  ksqldb-cli:
+    image: confluentinc/cp-ksqldb-cli:7.6.1
+    container_name: ksqldb-cli
+    entrypoint: /bin/sh
+    tty: true
+    depends_on:
+      - ksqldb-server
+
+  # ---------------------------------------------------------------------------
+  # KAFKA UI - visual cluster inspector
+  #   * Wired to Schema Registry, ksqlDB AND Kafka Connect (one place for
+  #     topics, consumer groups, schemas, ksqlDB queries, connectors).
+  #   * METRICS_TYPE=PROMETHEUS because each broker exposes Prometheus-format
+  #     metrics on :7071 via the JMX-exporter Java agent (not raw JMX).
+  # ---------------------------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'taxi-kraft-cluster'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:29092,kafka2:29092,kafka3:29092'
+      KAFKA_CLUSTERS_0_METRICS_TYPE: 'PROMETHEUS'
+      KAFKA_CLUSTERS_0_METRICS_PORT: 7071
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: 'http://schema-registry:8081'
+      KAFKA_CLUSTERS_0_KSQLDBSERVER: 'http://ksqldb-server:8088'
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: 'debezium-connect'
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: 'http://kafka-connect:8083'
+      DYNAMIC_CONFIG_ENABLED: 'true'
+      LOGGING_LEVEL_ROOT: 'INFO'
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_started
+      kafka3:
+        condition: service_started
+      schema-registry:
+        condition: service_started
+      kafka-connect:
+        condition: service_started
+      ksqldb-server:
+        condition: service_started
+
+  # ---------------------------------------------------------------------------
+  # KAFKA LAG EXPORTER - exposes consumer lag as Prometheus metrics
+  # ---------------------------------------------------------------------------
+  kafka-lag-exporter:
+    image: seglo/kafka-lag-exporter:0.7.1
+    container_name: kafka-lag-exporter
+    ports:
+      - "9999:9999"
+    volumes:
+      - ./kafka-lag-exporter.conf:/opt/docker/conf/application.conf
+    depends_on:
+      - kafka1
+
+  # ---------------------------------------------------------------------------
+  # PROMETHEUS - metrics scraping & storage
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerts.yml:/etc/prometheus/alerts.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ---------------------------------------------------------------------------
+  # GRAFANA - dashboards & visualization
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - ./grafana_provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  # ---------------------------------------------------------------------------
+  # ALERTMANAGER - routes alerts (Slack/email/webhook)
+  # ---------------------------------------------------------------------------
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  # ---------------------------------------------------------------------------
+  # LOKI - log aggregation (lightweight alternative to ELK)
+  # ---------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:2.9.5
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  # ---------------------------------------------------------------------------
+  # PROMTAIL - ships Docker container logs to Loki
+  # ---------------------------------------------------------------------------
+  promtail:
+    image: grafana/promtail:2.9.5
+    container_name: promtail
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
+  # ---------------------------------------------------------------------------
+  # LIVE DASHBOARD - shows taxis moving on a map (Flask + WebSocket)
+  # ---------------------------------------------------------------------------
+  taxi-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: taxi-dashboard
+    command: python dashboard.py
+    ports:
+      - "5000:5000"
+    environment:
+      KAFKA_BOOTSTRAP: 'kafka1:29092,kafka2:29092,kafka3:29092'
+    volumes:
+      - ./:/app
+    depends_on:
+      - kafka1
+
+volumes:
+  grafana-data:
