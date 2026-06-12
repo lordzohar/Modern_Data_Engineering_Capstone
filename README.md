@@ -3,6 +3,10 @@
 Production-grade Kafka observability lab kit built around an **NYC taxi pipeline**.
 15 hands-on labs, real CDC, real Great Expectations, real surge pricing, on a 3-broker **KRaft** cluster (no Zookeeper).
 
+
+
+This has been built by  Quid Zohar Morbiwala
+
 ## Quick start
 
 **Linux / macOS / WSL / Git Bash:**
