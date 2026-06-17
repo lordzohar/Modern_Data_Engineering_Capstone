@@ -23,14 +23,18 @@ with open(ROOT / "config.json", "r", encoding="utf-8") as fh:
 
 # ---------------------------------------------------------------------------
 # Infrastructure (overridable per-environment via env vars) -----------------
+# NOTE: We pin to 127.0.0.1 instead of "localhost" because on Windows the
+# resolver hands out ::1 (IPv6) first, and the Kafka brokers in this stack
+# only bind 0.0.0.0 (IPv4). Using 127.0.0.1 avoids the
+# "Connect to ipv6#[::1]:9092 failed" loop seen on first runs.
 KAFKA_BOOTSTRAP = os.environ.get(
     "KAFKA_BOOTSTRAP",
-    "localhost:9092,localhost:9094,localhost:9095",
+    "127.0.0.1:9092,127.0.0.1:9094,127.0.0.1:9095",
 )
-SCHEMA_REGISTRY_URL = os.environ.get("SCHEMA_REGISTRY_URL", "http://localhost:8081")
+SCHEMA_REGISTRY_URL = os.environ.get("SCHEMA_REGISTRY_URL", "http://127.0.0.1:8081")
 POSTGRES_DSN = os.environ.get(
     "POSTGRES_DSN",
-    "postgresql://taxi:taxi@localhost:5432/taxi",
+    "postgresql://taxi:taxi@127.0.0.1:5432/taxi",
 )
 
 # Topics ---------------------------------------------------------------------

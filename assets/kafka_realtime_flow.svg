@@ -1,0 +1,282 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" font-family="-apple-system, Segoe UI, sans-serif" role="img" aria-label="Animated Kafka real-time message flow">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#0f1a33"/>
+    </linearGradient>
+    <linearGradient id="topicBronze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d2c1a"/>
+      <stop offset="1" stop-color="#241a0f"/>
+    </linearGradient>
+    <linearGradient id="topicSilver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4150"/>
+      <stop offset="1" stop-color="#1d2128"/>
+    </linearGradient>
+    <linearGradient id="topicDLQ" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a1d1d"/>
+      <stop offset="1" stop-color="#1d0e0e"/>
+    </linearGradient>
+    <linearGradient id="topicGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a4a14"/>
+      <stop offset="1" stop-color="#3a2f0a"/>
+    </linearGradient>
+    <radialGradient id="goodMsg" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#a6f4e8"/>
+      <stop offset="1" stop-color="#4fd1c5"/>
+    </radialGradient>
+    <radialGradient id="badMsg" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffc4c4"/>
+      <stop offset="1" stop-color="#ff5252"/>
+    </radialGradient>
+    <radialGradient id="goldMsg" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff0a8"/>
+      <stop offset="1" stop-color="#f0c419"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="540" fill="url(#bg2)"/>
+
+  <!-- Header -->
+  <text x="600" y="36" text-anchor="middle" fill="#f5f7fa" font-size="20" font-weight="700">Real-time Kafka traffic — taxi-trips → trips-clean / trips-dlq → trips-enriched</text>
+  <text x="600" y="58" text-anchor="middle" fill="#7d8ba1" font-size="12">6 partitions · 3-broker KRaft · idempotent producer · acks=all · min.insync.replicas=2</text>
+
+  <!-- ===== Producer (left) ===== -->
+  <g>
+    <rect x="30" y="220" width="170" height="100" rx="12" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="115" y="252" text-anchor="middle" fill="#9ad" font-size="11">PRODUCER</text>
+    <text x="115" y="276" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">taxi_simulator.py</text>
+    <text x="115" y="298" text-anchor="middle" fill="#7d8ba1" font-size="11">~30 evt/s · 1.5% bad</text>
+    <!-- pulsing ring -->
+    <circle cx="115" cy="320" r="6" fill="#4fd1c5" opacity="0.9">
+      <animate attributeName="r" values="4;9;4" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- ===== BRONZE topic with 6 partitions ===== -->
+  <g>
+    <rect x="240" y="120" width="320" height="300" rx="12" fill="url(#topicBronze)" stroke="#a06b30"/>
+    <text x="400" y="148" text-anchor="middle" fill="#ffd9a8" font-size="12" letter-spacing="1.5">BRONZE TOPIC · taxi-trips</text>
+    <text x="400" y="166" text-anchor="middle" fill="#7d8ba1" font-size="11">6 partitions · RF=3</text>
+
+    <!-- 6 partition lanes -->
+    <g font-family="monospace" font-size="10" fill="#9ad">
+      <rect x="260" y="180" width="280" height="28" rx="4" fill="#0b1020" stroke="#3a5a8a" opacity="0.7"/>
+      <text x="270" y="198">P0</text>
+      <rect x="260" y="214" width="280" height="28" rx="4" fill="#0b1020" stroke="#3a5a8a" opacity="0.7"/>
+      <text x="270" y="232">P1</text>
+      <rect x="260" y="248" width="280" height="28" rx="4" fill="#0b1020" stroke="#3a5a8a" opacity="0.7"/>
+      <text x="270" y="266">P2</text>
+      <rect x="260" y="282" width="280" height="28" rx="4" fill="#0b1020" stroke="#3a5a8a" opacity="0.7"/>
+      <text x="270" y="300">P3</text>
+      <rect x="260" y="316" width="280" height="28" rx="4" fill="#0b1020" stroke="#3a5a8a" opacity="0.7"/>
+      <text x="270" y="334">P4</text>
+      <rect x="260" y="350" width="280" height="28" rx="4" fill="#0b1020" stroke="#3a5a8a" opacity="0.7"/>
+      <text x="270" y="368">P5</text>
+    </g>
+  </g>
+
+  <!-- ===== Consumer (middle) ===== -->
+  <g>
+    <rect x="600" y="220" width="170" height="100" rx="12" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="685" y="252" text-anchor="middle" fill="#9ad" font-size="11">STREAM PROCESSOR</text>
+    <text x="685" y="276" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">taxi_consumer.py</text>
+    <text x="685" y="298" text-anchor="middle" fill="#7d8ba1" font-size="11">validate · split good/bad</text>
+    <!-- gear -->
+    <g transform="translate(685,316)">
+      <circle r="5" fill="none" stroke="#4fd1c5" stroke-width="1.5"/>
+      <circle r="2" fill="#4fd1c5"/>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite" additive="sum"/>
+    </g>
+  </g>
+
+  <!-- ===== SILVER topic ===== -->
+  <g>
+    <rect x="810" y="120" width="170" height="120" rx="12" fill="url(#topicSilver)" stroke="#aab"/>
+    <text x="895" y="148" text-anchor="middle" fill="#fff" font-size="12" letter-spacing="1.5">SILVER</text>
+    <text x="895" y="166" text-anchor="middle" fill="#cdd" font-size="11">trips-clean</text>
+    <text x="895" y="186" text-anchor="middle" fill="#7d8ba1" font-size="10">schema OK · ranges OK</text>
+    <text x="895" y="222" text-anchor="middle" fill="#bcd" font-size="10" font-family="monospace">→ enricher</text>
+  </g>
+
+  <!-- ===== DLQ topic ===== -->
+  <g>
+    <rect x="810" y="300" width="170" height="120" rx="12" fill="url(#topicDLQ)" stroke="#a44"/>
+    <text x="895" y="328" text-anchor="middle" fill="#fff" font-size="12" letter-spacing="1.5">QUARANTINE</text>
+    <text x="895" y="346" text-anchor="middle" fill="#fcc" font-size="11">trips-dlq</text>
+    <text x="895" y="366" text-anchor="middle" fill="#7d8ba1" font-size="10">_dlq_reason set</text>
+    <text x="895" y="402" text-anchor="middle" fill="#fdd" font-size="10" font-family="monospace">→ replay tool</text>
+  </g>
+
+  <!-- ===== GOLD topic (right) ===== -->
+  <g>
+    <rect x="1020" y="200" width="160" height="140" rx="12" fill="url(#topicGold)" stroke="#caa018"/>
+    <text x="1100" y="228" text-anchor="middle" fill="#fff" font-size="12" letter-spacing="1.5">GOLD</text>
+    <text x="1100" y="246" text-anchor="middle" fill="#fde" font-size="11">trips-enriched</text>
+    <text x="1100" y="266" text-anchor="middle" fill="#7d8ba1" font-size="10">+ driver KTable</text>
+    <text x="1100" y="286" text-anchor="middle" fill="#7d8ba1" font-size="10">(Postgres CDC)</text>
+    <text x="1100" y="320" text-anchor="middle" fill="#fde" font-size="10" font-family="monospace">→ dashboard</text>
+  </g>
+
+  <!-- ===== Static guideline arrows ===== -->
+  <g fill="none" stroke-opacity="0.25" stroke-width="2">
+    <path d="M200,250 L240,250" stroke="#4fd1c5"/>
+    <path d="M200,290 L240,290" stroke="#4fd1c5"/>
+    <path d="M560,250 L600,250" stroke="#4fd1c5"/>
+    <path d="M560,290 L600,290" stroke="#4fd1c5"/>
+    <path d="M770,240 C790,200 790,180 810,160" stroke="#4fd1c5"/>
+    <path d="M770,310 C790,340 790,360 810,360" stroke="#ff6b6b"/>
+    <path d="M980,180 C1000,220 1010,240 1020,250" stroke="#f0c419"/>
+  </g>
+
+  <!-- ===========================================================
+       MESSAGE PARTICLES (animated)
+       12 messages flowing through the pipeline. Each particle
+       follows: producer -> partition lane -> consumer -> silver/dlq.
+       Stagger via begin offsets and randomize per partition.
+  =========================================================== -->
+
+  <!-- Helper: each message is a circle that moves along a path. -->
+  <!-- Define 6 producer-to-partition paths (P0..P5) -->
+
+  <!-- Lane Y centers: P0=194, P1=228, P2=262, P3=296, P4=330, P5=364 -->
+
+  <!-- ============ Group A: 90% good messages -> SILVER ============ -->
+  <!-- Each message: producer (200,270) -> mid of partition lane -> consumer (600,270) -> silver (810,160) -->
+
+  <g filter="url(#glow)">
+
+    <!-- P0 good 1 -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="0s"
+        path="M200,270 C220,270 230,194 270,194 L530,194 C560,194 580,270 600,270 L770,270 C790,270 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="0s"/>
+    </circle>
+
+    <!-- P1 good -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="0.3s"
+        path="M200,270 C220,270 230,228 270,228 L530,228 C560,228 580,270 600,270 L770,270 C790,260 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="0.3s"/>
+    </circle>
+
+    <!-- P2 good -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="0.6s"
+        path="M200,270 C220,270 240,262 270,262 L530,262 C560,262 580,270 600,270 L770,270 C790,250 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="0.6s"/>
+    </circle>
+
+    <!-- P3 good -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="0.9s"
+        path="M200,270 C220,270 240,296 270,296 L530,296 C560,296 580,270 600,270 L770,270 C790,240 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="0.9s"/>
+    </circle>
+
+    <!-- P4 good -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="1.2s"
+        path="M200,270 C220,270 240,330 270,330 L530,330 C560,330 580,270 600,270 L770,270 C790,230 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="1.2s"/>
+    </circle>
+
+    <!-- P5 good -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="1.5s"
+        path="M200,270 C220,270 240,364 270,364 L530,364 C560,364 580,270 600,270 L770,270 C790,220 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="1.5s"/>
+    </circle>
+
+    <!-- Second wave (more density) -->
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="1.8s"
+        path="M200,270 C220,270 230,194 270,194 L530,194 C560,194 580,270 600,270 L770,270 C790,270 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="1.8s"/>
+    </circle>
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="2.1s"
+        path="M200,270 C220,270 240,262 270,262 L530,262 C560,262 580,270 600,270 L770,270 C790,250 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="2.1s"/>
+    </circle>
+    <circle r="6" fill="url(#goodMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="2.4s"
+        path="M200,270 C220,270 240,330 270,330 L530,330 C560,330 580,270 600,270 L770,270 C790,230 800,200 810,160"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="2.4s"/>
+    </circle>
+
+    <!-- Bad messages -> DLQ -->
+    <circle r="6" fill="url(#badMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="0.45s"
+        path="M200,270 C220,270 240,296 270,296 L530,296 C560,296 580,270 600,270 L770,270 C790,300 800,340 810,360"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="0.45s"/>
+    </circle>
+    <circle r="6" fill="url(#badMsg)">
+      <animateMotion dur="3.6s" repeatCount="indefinite" begin="2.55s"
+        path="M200,270 C220,270 240,364 270,364 L530,364 C560,364 580,270 600,270 L770,270 C790,300 800,340 810,360"/>
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.5;0.95;1" dur="3.6s" repeatCount="indefinite" begin="2.55s"/>
+    </circle>
+
+    <!-- Silver -> Gold (enricher pulse) -->
+    <circle r="6" fill="url(#goldMsg)">
+      <animateMotion dur="2.4s" repeatCount="indefinite" begin="1.2s"
+        path="M895,180 C950,180 990,220 1020,250"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2.4s" repeatCount="indefinite" begin="1.2s"/>
+    </circle>
+    <circle r="6" fill="url(#goldMsg)">
+      <animateMotion dur="2.4s" repeatCount="indefinite" begin="2.4s"
+        path="M895,180 C950,180 990,220 1020,260"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2.4s" repeatCount="indefinite" begin="2.4s"/>
+    </circle>
+    <circle r="6" fill="url(#goldMsg)">
+      <animateMotion dur="2.4s" repeatCount="indefinite" begin="3.6s"
+        path="M895,180 C950,180 990,220 1020,270"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2.4s" repeatCount="indefinite" begin="3.6s"/>
+    </circle>
+  </g>
+
+  <!-- ===== Throughput counter (decorative) ===== -->
+  <g font-family="monospace">
+    <rect x="30" y="450" width="1140" height="64" rx="10" fill="#0e1730" stroke="#2a3a5a"/>
+
+    <text x="60"  y="475" fill="#9ad" font-size="10">PRODUCED</text>
+    <text x="60"  y="500" fill="#4fd1c5" font-size="22" font-weight="700">8 403
+      <animate attributeName="opacity" values="1;0.6;1" dur="1.4s" repeatCount="indefinite"/>
+    </text>
+
+    <text x="240" y="475" fill="#9ad" font-size="10">TO SILVER</text>
+    <text x="240" y="500" fill="#4fd1c5" font-size="22" font-weight="700">8 281
+      <animate attributeName="opacity" values="1;0.6;1" dur="1.4s" begin="0.2s" repeatCount="indefinite"/>
+    </text>
+
+    <text x="430" y="475" fill="#9ad" font-size="10">TO DLQ</text>
+    <text x="430" y="500" fill="#ff6b6b" font-size="22" font-weight="700">122
+      <animate attributeName="opacity" values="1;0.5;1" dur="1.6s" repeatCount="indefinite"/>
+    </text>
+
+    <text x="600" y="475" fill="#9ad" font-size="10">CONSUMER LAG</text>
+    <text x="600" y="500" fill="#ffcc00" font-size="22" font-weight="700">5
+      <animate attributeName="opacity" values="1;0.5;1" dur="1.0s" repeatCount="indefinite"/>
+    </text>
+
+    <text x="800" y="475" fill="#9ad" font-size="10">QUALITY SCORE</text>
+    <text x="800" y="500" fill="#4fd1c5" font-size="22" font-weight="700">98.5%</text>
+
+    <text x="990" y="475" fill="#9ad" font-size="10">ACK MODE</text>
+    <text x="990" y="500" fill="#fff" font-size="13" font-weight="700">acks=all · ISR≥2</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-size="11">
+    <circle cx="60"  cy="100" r="6" fill="url(#goodMsg)"/>
+    <text   x="74"  y="104" fill="#9ad">valid record</text>
+    <circle cx="190" cy="100" r="6" fill="url(#badMsg)"/>
+    <text   x="204"  y="104" fill="#9ad">corrupt → DLQ</text>
+    <circle cx="340" cy="100" r="6" fill="url(#goldMsg)"/>
+    <text   x="354"  y="104" fill="#9ad">enriched (Gold)</text>
+  </g>
+</svg>

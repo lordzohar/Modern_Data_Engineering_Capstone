@@ -1,0 +1,391 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 760" font-family="-apple-system, Segoe UI, sans-serif" role="img" aria-label="End-to-end streaming data pipeline architecture">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#11192f"/>
+    </linearGradient>
+    <linearGradient id="bronze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a4b1d"/>
+      <stop offset="1" stop-color="#5a3614"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9aa3b2"/>
+      <stop offset="1" stop-color="#5b6372"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0c419"/>
+      <stop offset="1" stop-color="#a17d09"/>
+    </linearGradient>
+
+    <marker id="arrTeal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4fd1c5"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ffcc00"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/>
+    </marker>
+    <marker id="arrGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f0c419"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c7a8e6"/>
+    </marker>
+
+    <!-- Reusable animated flow line: solid base + marching dashes -->
+  </defs>
+
+  <rect width="1300" height="760" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="650" y="40" text-anchor="middle" fill="#f5f7fa" font-size="22" font-weight="700">NYC Taxi Streaming Pipeline — Bronze → Silver → Gold</text>
+  <text x="650" y="64" text-anchor="middle" fill="#7d8ba1" font-size="13">3-broker KRaft Kafka · Debezium CDC · ksqlDB · Great Expectations · Prometheus + Grafana + Loki + Alertmanager</text>
+
+  <!-- Stage labels -->
+  <g font-size="10" fill="#5d6c84" letter-spacing="2" text-anchor="middle">
+    <text x="100"  y="100">SOURCES</text>
+    <text x="300"  y="100">BRONZE TOPICS</text>
+    <text x="490"  y="100">B → S PROCESSOR</text>
+    <text x="660"  y="100">SILVER TOPICS</text>
+    <text x="840"  y="100">S → G PROCESSORS</text>
+    <text x="1020" y="100">GOLD TOPICS</text>
+    <text x="1195" y="100">SINK</text>
+  </g>
+
+  <!-- ================= STAGE 1: SOURCES ================= -->
+  <g>
+    <rect x="20" y="130" width="160" height="74" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="100" y="156" text-anchor="middle" fill="#9ad" font-size="11">SOURCE · synthetic</text>
+    <text x="100" y="178" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">taxi_simulator.py</text>
+    <text x="100" y="194" text-anchor="middle" fill="#7d8ba1" font-size="10">50 drivers · 1.5% bad</text>
+
+    <rect x="20" y="246" width="160" height="64" rx="10" fill="#1d2a18" stroke="#3a6b3a"/>
+    <text x="100" y="270" text-anchor="middle" fill="#9c9" font-size="11">SOURCE · system of record</text>
+    <text x="100" y="290" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">PostgreSQL</text>
+    <text x="100" y="304" text-anchor="middle" fill="#7d8ba1" font-size="10">drivers · wal_level=logical</text>
+
+    <rect x="20" y="332" width="160" height="56" rx="10" fill="#2a1d2e" stroke="#7a3a8a"/>
+    <text x="100" y="354" text-anchor="middle" fill="#cab" font-size="11">CDC · log-based</text>
+    <text x="100" y="374" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Debezium 2.6</text>
+  </g>
+
+  <!-- ================= STAGE 2: BRONZE TOPICS ================= -->
+  <g>
+    <rect x="220" y="130" width="170" height="74" rx="10" fill="url(#bronze)" stroke="#a06b30"/>
+    <text x="232" y="152" fill="#fff" font-size="12" font-weight="700">BRONZE</text>
+    <text x="232" y="170" fill="#fde" font-size="11">taxi-trips</text>
+    <text x="232" y="186" fill="#fde" font-size="10" font-family="monospace">6p · RF=3</text>
+    <text x="232" y="200" fill="#fde" font-size="10" opacity="0.8">raw events (incl. ~1.5% bad)</text>
+
+    <rect x="220" y="246" width="170" height="64" rx="10" fill="#3d2c1a" stroke="#a06b30"/>
+    <text x="232" y="270" fill="#fff" font-size="12" font-weight="700">gps-pings</text>
+    <text x="232" y="288" fill="#fde" font-size="10" font-family="monospace">12p · RF=3</text>
+    <text x="232" y="302" fill="#fde" font-size="10" opacity="0.8">high-volume positions</text>
+
+    <rect x="220" y="332" width="170" height="56" rx="10" fill="#2a1d2e" stroke="#7a3a8a"/>
+    <text x="232" y="354" fill="#fff" font-size="12" font-weight="700">cdc.public.drivers</text>
+    <text x="232" y="372" fill="#fde" font-size="10" opacity="0.85">Debezium CDC topic</text>
+  </g>
+
+  <!-- ================= STAGE 3: B→S PROCESSOR ================= -->
+  <g>
+    <rect x="430" y="148" width="140" height="100" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="500" y="172" text-anchor="middle" fill="#9ad" font-size="10">Bronze → Silver</text>
+    <text x="500" y="194" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">taxi_consumer.py</text>
+    <text x="500" y="212" text-anchor="middle" fill="#7d8ba1" font-size="10">schema validation</text>
+    <text x="500" y="226" text-anchor="middle" fill="#7d8ba1" font-size="10">range / null checks</text>
+    <!-- working indicator -->
+    <g transform="translate(500,238)">
+      <circle r="3" fill="#4fd1c5">
+        <animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
+
+  <!-- ================= STAGE 4: SILVER TOPICS ================= -->
+  <g>
+    <rect x="600" y="130" width="170" height="74" rx="10" fill="url(#silver)" stroke="#aab"/>
+    <text x="612" y="152" fill="#0b1020" font-size="12" font-weight="700">SILVER</text>
+    <text x="612" y="170" fill="#0b1020" font-size="11">trips-clean</text>
+    <text x="612" y="186" fill="#0b1020" font-size="10" font-family="monospace">6p · RF=3</text>
+    <text x="612" y="200" fill="#0b1020" font-size="10">validated · contracts ok</text>
+
+    <rect x="600" y="246" width="170" height="64" rx="10" fill="#3a1d1d" stroke="#a44"/>
+    <text x="612" y="270" fill="#fff" font-size="12" font-weight="700">QUARANTINE</text>
+    <text x="612" y="288" fill="#fdd" font-size="11">trips-dlq</text>
+    <text x="612" y="302" fill="#fdd" font-size="10">_dlq_reason metadata</text>
+  </g>
+
+  <!-- ================= STAGE 5: S→G PROCESSORS ================= -->
+  <g>
+    <rect x="790" y="124" width="160" height="74" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="870" y="146" text-anchor="middle" fill="#9ad" font-size="10">stream-table KTable join</text>
+    <text x="870" y="168" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">driver_enricher.py</text>
+    <text x="870" y="186" text-anchor="middle" fill="#7d8ba1" font-size="10">trips-clean ⨝ drivers</text>
+
+    <rect x="790" y="226" width="160" height="74" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="870" y="248" text-anchor="middle" fill="#9ad" font-size="10">tumbling 60s window</text>
+    <text x="870" y="270" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">surge_detector.py</text>
+    <text x="870" y="288" text-anchor="middle" fill="#7d8ba1" font-size="10">demand / supply ratio</text>
+
+    <rect x="790" y="328" width="160" height="74" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="870" y="350" text-anchor="middle" fill="#9ad" font-size="10">Great Expectations</text>
+    <text x="870" y="372" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">quality_validator.py</text>
+    <text x="870" y="390" text-anchor="middle" fill="#7d8ba1" font-size="10">read-only · alerts on fail</text>
+  </g>
+
+  <!-- ================= STAGE 6: GOLD TOPICS ================= -->
+  <g>
+    <rect x="970" y="130" width="170" height="74" rx="10" fill="url(#gold)" stroke="#caa018"/>
+    <text x="982" y="152" fill="#0b1020" font-size="12" font-weight="700">GOLD</text>
+    <text x="982" y="170" fill="#0b1020" font-size="11">trips-enriched</text>
+    <text x="982" y="186" fill="#0b1020" font-size="10" font-family="monospace">6p · RF=3</text>
+    <text x="982" y="200" fill="#0b1020" font-size="10">+ driver name, license</text>
+
+    <rect x="970" y="232" width="170" height="64" rx="10" fill="#2a2a44" stroke="#6a6aaa"/>
+    <text x="982" y="256" fill="#fff" font-size="12" font-weight="700">surge-events</text>
+    <text x="982" y="274" fill="#dcf" font-size="10">log-compacted</text>
+    <text x="982" y="288" fill="#dcf" font-size="10">latest multiplier per zone</text>
+  </g>
+
+  <!-- ================= STAGE 7: SINK ================= -->
+  <g>
+    <rect x="1160" y="130" width="120" height="172" rx="10" fill="#1d2e2a" stroke="#3a8a78"/>
+    <text x="1220" y="156" text-anchor="middle" fill="#7fd" font-size="10">Flask + Socket.IO</text>
+    <text x="1220" y="170" text-anchor="middle" fill="#7fd" font-size="10">+ Leaflet</text>
+    <text x="1220" y="194" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">dashboard.py</text>
+    <text x="1220" y="212" text-anchor="middle" fill="#7d8ba1" font-size="10">localhost:5000</text>
+    <text x="1220" y="226" text-anchor="middle" fill="#7d8ba1" font-size="10">live map</text>
+    <!-- live dot -->
+    <circle cx="1220" cy="248" r="5" fill="#4fd1c5">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <text x="1220" y="270" text-anchor="middle" fill="#7d8ba1" font-size="9">consumes 4 topics</text>
+    <text x="1220" y="284" text-anchor="middle" fill="#7d8ba1" font-size="9">over websocket</text>
+  </g>
+
+  <!-- ================= KAFKA CLUSTER BAND (decorative ribbon behind topics) ================= -->
+  <g>
+    <rect x="200" y="416" width="940" height="36" rx="8" fill="#0e1730" stroke="#2a3a5a"/>
+    <text x="220" y="438" fill="#9ad" font-size="11" letter-spacing="2">KRAFT KAFKA · 3 BROKERS · NO ZOOKEEPER · acks=all · min.insync.replicas=2</text>
+    <g font-size="10" fill="#9ad" font-family="monospace">
+      <rect x="900"  y="423" width="60" height="22" rx="4" fill="#1f2a44" stroke="#4a6a9a"/>
+      <text x="930"  y="439" text-anchor="middle">broker 1</text>
+      <rect x="970"  y="423" width="60" height="22" rx="4" fill="#1f2a44" stroke="#4a6a9a"/>
+      <text x="1000" y="439" text-anchor="middle">broker 2</text>
+      <rect x="1040" y="423" width="60" height="22" rx="4" fill="#1f2a44" stroke="#4a6a9a"/>
+      <text x="1070" y="439" text-anchor="middle">broker 3</text>
+    </g>
+  </g>
+
+  <!-- ================= STREAM SQL / SCHEMA REGISTRY (also Kafka-side services) ================= -->
+  <g>
+    <rect x="220" y="476" width="220" height="46" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="232" y="496" fill="#9ad" font-size="11">stream SQL alternative</text>
+    <text x="232" y="514" fill="#fff" font-size="13" font-weight="700">ksqlDB · :8088</text>
+
+    <rect x="460" y="476" width="220" height="46" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="472" y="496" fill="#9ad" font-size="11">contract enforcement</text>
+    <text x="472" y="514" fill="#fff" font-size="13" font-weight="700">Schema Registry · :8081</text>
+
+    <rect x="700" y="476" width="220" height="46" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="712" y="496" fill="#9ad" font-size="11">connectors</text>
+    <text x="712" y="514" fill="#fff" font-size="13" font-weight="700">Kafka Connect · :8083</text>
+
+    <rect x="940" y="476" width="200" height="46" rx="10" fill="#16243f" stroke="#3a5a8a"/>
+    <text x="952" y="496" fill="#9ad" font-size="11">UI</text>
+    <text x="952" y="514" fill="#fff" font-size="13" font-weight="700">Kafka UI · :8080</text>
+  </g>
+
+  <!-- ============================================================
+       ARROWS — strict left-to-right, no return paths.
+       Each one has:
+         (a) a base stroke for shape
+         (b) an animated dashed overlay for "flowing" effect
+  ============================================================ -->
+
+  <!-- 1. simulator → taxi-trips -->
+  <g>
+    <path d="M180,167 L220,167" fill="none" stroke="#4fd1c5" stroke-width="2.5" marker-end="url(#arrTeal)"/>
+    <path d="M180,167 L218,167" fill="none" stroke="#a6f4e8" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 2. simulator → gps-pings -->
+  <g>
+    <path d="M180,200 C195,200 200,278 220,278" fill="none" stroke="#4fd1c5" stroke-width="2.5" marker-end="url(#arrTeal)"/>
+    <path d="M180,200 C195,200 200,278 218,278" fill="none" stroke="#a6f4e8" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.0s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 3. postgres → debezium (vertical) -->
+  <g>
+    <path d="M100,310 L100,332" fill="none" stroke="#c7a8e6" stroke-width="2.5" marker-end="url(#arrPurple)"/>
+    <path d="M100,310 L100,330" fill="none" stroke="#e6cffa" stroke-width="2.5" stroke-dasharray="5 6">
+      <animate attributeName="stroke-dashoffset" from="11" to="0" dur="1.2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 4. debezium → cdc.public.drivers -->
+  <g>
+    <path d="M180,360 L220,360" fill="none" stroke="#c7a8e6" stroke-width="2.5" marker-end="url(#arrPurple)"/>
+    <path d="M180,360 L218,360" fill="none" stroke="#e6cffa" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 5. taxi-trips → consumer -->
+  <g>
+    <path d="M390,167 C410,167 415,190 430,190" fill="none" stroke="#ffcc00" stroke-width="2.5" marker-end="url(#arrAmber)"/>
+    <path d="M390,167 C410,167 415,190 428,190" fill="none" stroke="#ffe680" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.0s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 6. consumer → trips-clean -->
+  <g>
+    <path d="M570,180 C585,180 590,167 600,167" fill="none" stroke="#4fd1c5" stroke-width="2.5" marker-end="url(#arrTeal)"/>
+    <path d="M570,180 C585,180 590,167 598,167" fill="none" stroke="#a6f4e8" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 7. consumer → trips-dlq (red) -->
+  <g>
+    <path d="M570,220 C585,220 590,278 600,278" fill="none" stroke="#ff6b6b" stroke-width="2.5" marker-end="url(#arrRed)"/>
+    <path d="M570,220 C585,220 590,278 598,278" fill="none" stroke="#ffb3b3" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 8. trips-clean → driver_enricher -->
+  <g>
+    <path d="M770,165 C780,165 785,160 790,160" fill="none" stroke="#ffcc00" stroke-width="2.5" marker-end="url(#arrAmber)"/>
+    <path d="M770,165 C780,165 785,160 788,160" fill="none" stroke="#ffe680" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 9. trips-clean → surge_detector -->
+  <g>
+    <path d="M770,180 C780,180 785,260 790,260" fill="none" stroke="#ffcc00" stroke-width="2.5" marker-end="url(#arrAmber)"/>
+    <path d="M770,180 C780,180 785,260 788,260" fill="none" stroke="#ffe680" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.0s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 10. trips-clean → quality_validator -->
+  <g>
+    <path d="M770,195 C780,195 785,365 790,365" fill="none" stroke="#ffcc00" stroke-width="2.5" marker-end="url(#arrAmber)"/>
+    <path d="M770,195 C780,195 785,365 788,365" fill="none" stroke="#ffe680" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 11. cdc.drivers → driver_enricher (long arc over silver column) -->
+  <g>
+    <path d="M390,355 C500,355 600,355 720,355 C760,355 780,180 790,175" fill="none" stroke="#c7a8e6" stroke-width="2.5" marker-end="url(#arrPurple)"/>
+    <path d="M390,355 C500,355 600,355 720,355 C760,355 780,180 788,175" fill="none" stroke="#e6cffa" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.6s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 12. driver_enricher → trips-enriched -->
+  <g>
+    <path d="M950,165 C960,165 965,167 970,167" fill="none" stroke="#f0c419" stroke-width="2.5" marker-end="url(#arrGold)"/>
+    <path d="M950,165 C960,165 965,167 968,167" fill="none" stroke="#ffe680" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="0.8s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 13. surge_detector → surge-events -->
+  <g>
+    <path d="M950,260 C960,260 965,260 970,260" fill="none" stroke="#aaaaff" stroke-width="2.5" marker-end="url(#arrTeal)"/>
+    <path d="M950,260 C960,260 965,260 968,260" fill="none" stroke="#d6d6ff" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.1s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 14. trips-enriched → dashboard -->
+  <g>
+    <path d="M1140,167 C1150,167 1155,190 1160,190" fill="none" stroke="#f0c419" stroke-width="2.5" marker-end="url(#arrGold)"/>
+    <path d="M1140,167 C1150,167 1155,190 1158,190" fill="none" stroke="#ffe680" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 15. surge-events → dashboard -->
+  <g>
+    <path d="M1140,264 C1150,264 1155,220 1160,220" fill="none" stroke="#aaaaff" stroke-width="2.5" marker-end="url(#arrTeal)"/>
+    <path d="M1140,264 C1150,264 1155,220 1158,220" fill="none" stroke="#d6d6ff" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.0s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 16. trips-dlq → dashboard (long red, lower channel) -->
+  <g>
+    <path d="M770,290 C900,290 1080,290 1130,290 C1145,290 1155,250 1160,250" fill="none" stroke="#ff6b6b" stroke-width="2.5" marker-end="url(#arrRed)"/>
+    <path d="M770,290 C900,290 1080,290 1130,290 C1145,290 1155,250 1158,250" fill="none" stroke="#ffb3b3" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.6s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 17. gps-pings → dashboard (long teal, top channel) -->
+  <g>
+    <path d="M390,265 C420,265 420,118 500,118 L1140,118 C1150,118 1155,275 1160,275" fill="none" stroke="#4fd1c5" stroke-width="2.5" marker-end="url(#arrTeal)"/>
+    <path d="M390,265 C420,265 420,118 500,118 L1140,118 C1150,118 1155,275 1158,275" fill="none" stroke="#a6f4e8" stroke-width="2.5" stroke-dasharray="6 8" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="2.2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- ================= OBSERVABILITY BAND ================= -->
+  <g>
+    <rect x="20" y="556" width="1260" height="128" rx="14" fill="#0e1730" stroke="#2a3a5a"/>
+    <text x="40" y="582" fill="#9ad" font-size="12" letter-spacing="2">OBSERVABILITY · METRICS · LOGS · ALERTS</text>
+
+    <g font-size="12">
+      <rect x="40"   y="600" width="186" height="64" rx="8" fill="#16243f" stroke="#3a5a8a"/>
+      <text x="133"  y="626" text-anchor="middle" fill="#fff" font-weight="600">JMX Exporter</text>
+      <text x="133"  y="646" text-anchor="middle" fill="#7d8ba1" font-size="11">broker JMX → :7071</text>
+
+      <rect x="246"  y="600" width="186" height="64" rx="8" fill="#3a1d1d" stroke="#a44"/>
+      <text x="339"  y="626" text-anchor="middle" fill="#fff" font-weight="600">Prometheus</text>
+      <text x="339"  y="646" text-anchor="middle" fill="#fdd" font-size="11">15 scrape targets · :9090</text>
+
+      <rect x="452"  y="600" width="186" height="64" rx="8" fill="#3a2a18" stroke="#caa018"/>
+      <text x="545"  y="626" text-anchor="middle" fill="#fff" font-weight="600">Grafana</text>
+      <text x="545"  y="646" text-anchor="middle" fill="#fde" font-size="11">dashboards · :3000</text>
+
+      <rect x="658"  y="600" width="186" height="64" rx="8" fill="#1d2e2a" stroke="#3a8a78"/>
+      <text x="751"  y="626" text-anchor="middle" fill="#fff" font-weight="600">Loki + Promtail</text>
+      <text x="751"  y="646" text-anchor="middle" fill="#bfe" font-size="11">container logs</text>
+
+      <rect x="864"  y="600" width="186" height="64" rx="8" fill="#2a1d2e" stroke="#7a3a8a"/>
+      <text x="957"  y="626" text-anchor="middle" fill="#fff" font-weight="600">Alertmanager</text>
+      <text x="957"  y="646" text-anchor="middle" fill="#dcf" font-size="11">routes &amp; silences · :9093</text>
+
+      <rect x="1070" y="600" width="190" height="64" rx="8" fill="#16243f" stroke="#3a5a8a"/>
+      <text x="1165" y="626" text-anchor="middle" fill="#fff" font-weight="600">kafka-lag-exporter</text>
+      <text x="1165" y="646" text-anchor="middle" fill="#9ad" font-size="11">consumer lag · :8000</text>
+    </g>
+  </g>
+
+  <!-- ================= LEGEND ================= -->
+  <g font-size="11" font-family="monospace" transform="translate(40,712)">
+    <circle cx="6"   cy="-2" r="5" fill="#4fd1c5"/>
+    <text   x="18"   y="2"  fill="#9ad">happy path / Bronze ingest</text>
+    <circle cx="220" cy="-2" r="5" fill="#ffcc00"/>
+    <text   x="232"  y="2"  fill="#9ad">stream processing read</text>
+    <circle cx="430" cy="-2" r="5" fill="#f0c419"/>
+    <text   x="442"  y="2"  fill="#9ad">Gold output</text>
+    <circle cx="580" cy="-2" r="5" fill="#ff6b6b"/>
+    <text   x="592"  y="2"  fill="#9ad">DLQ / quarantined</text>
+    <circle cx="760" cy="-2" r="5" fill="#c7a8e6"/>
+    <text   x="772"  y="2"  fill="#9ad">CDC (Postgres → Kafka)</text>
+    <circle cx="990" cy="-2" r="5" fill="#aaaaff"/>
+    <text   x="1002" y="2"  fill="#9ad">surge / compacted</text>
+  </g>
+</svg>

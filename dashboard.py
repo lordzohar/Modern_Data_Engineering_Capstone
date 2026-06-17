@@ -27,7 +27,7 @@ from flask_socketio import SocketIO
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [dash] %(message)s")
 log = logging.getLogger(__name__)
 
-BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP", "localhost:9092,localhost:9094,localhost:9095")
+BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP", "127.0.0.1:9092,127.0.0.1:9094,127.0.0.1:9095")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "taxi-dev"
